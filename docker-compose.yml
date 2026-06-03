@@ -1,0 +1,61 @@
+services:
+  # Module Frontend (Next.js)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: beacons_frontend
+    volumes:
+      - /var/www/Beacons:/app/dist
+
+  # Module Backend (Node.js)
+  backend:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+    container_name: beacons_backend
+    ports:
+      - "3001:3001"
+    environment:
+      # Override các URL nội bộ trong docker network
+      - REDIS_URL=redis://redis:6379
+      - AI_URL=http://ai:8000
+      - FRONTEND_URL=http://localhost:3000
+    env_file:
+      - ./Backend/.env
+    depends_on:
+      - redis
+      - ai
+    networks:
+      - beacons_net
+
+  # Module AI (FastAPI / PyTorch)
+  ai:
+    build:
+      context: ./AI
+      dockerfile: Dockerfile
+    container_name: beacons_ai
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./AI/.env
+    networks:
+      - beacons_net
+
+  # Redis Database (Dành cho BullMQ)
+  redis:
+    image: redis:7-alpine
+    container_name: beacons_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - beacons_net
+
+networks:
+  beacons_net:
+    driver: bridge
+
+volumes:
+  redis_data:
