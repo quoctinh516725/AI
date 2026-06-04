@@ -4,9 +4,17 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:3001
     container_name: beacons_frontend
     ports:
       - "3000:3000"
+    env_file:
+      - ./frontend/.env
+    networks:
+      - beacons_net
+    depends_on:
+      - backend
 
   # Module Backend (Node.js)
   backend:
