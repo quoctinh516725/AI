@@ -68,7 +68,7 @@ export default function SearchPage() {
       if (formData.lost_year) submitData.append("lost_year", formData.lost_year);
       if (formData.date_of_birth) submitData.append("date_of_birth", formData.date_of_birth);
 
-      const response = await fetch("/api/search", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/search`, {
         method: "POST",
         body: submitData,
       });

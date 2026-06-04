@@ -42,7 +42,7 @@ export default function EditPostPage() {
 
   const fetchPostData = async () => {
     try {
-      const response = await fetch(`/api/posts/${postId}`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/posts/${postId}`);
       const result = await response.json();
       
       if (!response.ok) {
@@ -102,7 +102,7 @@ export default function EditPostPage() {
         hometown: formData.hometown || undefined,
       };
 
-      const response = await fetch(`/api/posts/${postId}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/posts/${postId}`, {
         method: "PUT",
         headers: {
           "Authorization": `Bearer ${token}`,

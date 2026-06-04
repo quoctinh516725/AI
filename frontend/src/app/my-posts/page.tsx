@@ -50,7 +50,7 @@ export default function MyPostsPage() {
         return;
       }
 
-      const response = await fetch("/api/posts/me?page=1&limit=50", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/posts/me?page=1&limit=50`, {
         headers: {
           "Authorization": `Bearer ${token}`
         }
@@ -88,7 +88,7 @@ export default function MyPostsPage() {
     setCustomConfirm(prev => ({ ...prev, show: false }));
     try {
       const token = localStorage.getItem("accessToken");
-      const response = await fetch(`/api/posts/${postId}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/posts/${postId}`, {
         method: "DELETE",
         headers: {
           "Authorization": `Bearer ${token}`
@@ -112,7 +112,7 @@ export default function MyPostsPage() {
       setIsSubmitting(true);
       setPendingPostId(postId);
       const token = localStorage.getItem("accessToken");
-      const response = await fetch(`/api/posts/${postId}/similar`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/posts/${postId}/similar`, {
         headers: {
           "Authorization": `Bearer ${token}`
         }
@@ -138,7 +138,7 @@ export default function MyPostsPage() {
     try {
       const token = localStorage.getItem("accessToken");
 
-      const response = await fetch(`/api/posts/${pendingPostId}/confirm`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/posts/${pendingPostId}/confirm`, {
         method: "PATCH",
         headers: {
           "Authorization": `Bearer ${token}`,

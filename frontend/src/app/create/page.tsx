@@ -103,7 +103,7 @@ export default function CreatePostPage() {
       if (formData.lost_year) submitData.append("lost_year", formData.lost_year);
       if (formData.hometown) submitData.append("hometown", formData.hometown);
 
-      const response = await fetch("/api/posts", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/posts`, {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${token}`
@@ -156,7 +156,7 @@ export default function CreatePostPage() {
         });
       }
 
-      const response = await fetch(`/api/posts/${pendingPostId}/confirm`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/posts/${pendingPostId}/confirm`, {
         method: "PATCH",
         headers: {
           "Authorization": `Bearer ${token}`,

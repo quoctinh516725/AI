@@ -21,7 +21,7 @@ export default function PostDetailPage() {
     const fetchPostDetails = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`/api/posts/${id}`);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/posts/${id}`);
         const result = await response.json();
 
         if (!response.ok) {
