@@ -8,8 +8,11 @@ RUN npm ci
 
 COPY . .
 
-# Build the Next.js application (generates static files in /app/out)
+# Build the Next.js application
 RUN npm run build
 
-# When the container starts, copy the static files to the mounted volume
-CMD ["sh", "-c", "cp -a /app/out/. /app/dist/"]
+# Expose port 3000
+EXPOSE 3000
+
+# Run the Next.js server on port 3000
+CMD ["npm", "run", "start"]

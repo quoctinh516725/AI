@@ -5,8 +5,8 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     container_name: beacons_frontend
-    volumes:
-      - /var/www/Beacons:/app/dist
+    ports:
+      - "3000:3000"
 
   # Module Backend (Node.js)
   backend:
