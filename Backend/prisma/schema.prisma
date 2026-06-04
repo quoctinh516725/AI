@@ -1,0 +1,59 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  username  String   @unique
+  phone     String
+  password  String?
+  avatar    String?
+  status    String   @default("ACTIVE")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  posts     Post[]
+
+  @@map("users")
+}
+
+model Post {
+  id               String   @id @default(uuid())
+  authorId         String
+  personId         String?
+  pendingPersonIds String[] @default([])
+
+  title String
+
+  // Snapshot dữ liệu phục vụ cho việc tìm kiếm và hiển thị thông tin thân nhân mất tích, tránh việc phải join với bảng Person mỗi lần truy vấn
+  name          String
+  age           Int
+  gender        String
+  image_url     String?
+  date_of_birth DateTime?
+
+  lost_year   Int? // Năm mất tích của thân nhân
+  hometown    String? // Quê quán của thân nhân
+  location    String // Nơi ở hiện tại của thân nhân
+  description String // Mô tả chi tiết về thân nhân, có thể bao gồm các đặc điểm nhận dạng, v.v.
+
+  status    String   @default("PENDING") // Trạng thái của bài đăng PENDING, CONFIRMED
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  author User @relation(fields: [authorId], references: [id])
+
+  @@index([authorId])
+  @@index([personId])
+  @@map("posts")
+}
