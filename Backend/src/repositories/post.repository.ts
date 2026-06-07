@@ -9,6 +9,7 @@ export class PostRepository {
       select: {
         id: true,
         authorId: true,
+        personId: true,
       },
     });
   };

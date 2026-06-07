@@ -19,6 +19,5 @@ def verify_image(image_path: str = None, image_base64: str = None):
 
     # Giải mã mảng thành ảnh
     img = cv2.imdecode(arr, cv2.IMREAD_COLOR)
-    print("Ảnh đã được giải mã thành công: ", img)
     return img
 

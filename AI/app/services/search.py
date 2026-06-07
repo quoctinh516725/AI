@@ -14,13 +14,11 @@ def search_embedding(data, db):
         raise ValueError("Không đọc được ảnh từ đường dẫn yêu cầu.")
     
     face_tensor = extract_face(image)
-    print("Tensor khuôn mặt đã được trích xuất: ", face_tensor)
 
     embedding = get_embedding(face_tensor)
-    print("Embedding đã được trích xuất: ", embedding)
 
     faiss_manager = get_faiss_manager()
 
     results = faiss_manager.search_vector(embedding, db, 5)
-    
+    print("Kết quả tìm kiếm: ", results)
     return results

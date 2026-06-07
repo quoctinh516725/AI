@@ -20,29 +20,40 @@ import userRepository from "../repositories/user.repository";
 import { env } from "../configs/env";
 import { PostStatus } from "../constants/postStatus";
 import axios from "axios";
+import { performance } from "perf_hooks";
 
 class PostService {
   createPost = async (
     userId: string,
     data: CreatePostRequestDto,
   ): Promise<PostResponseDto> => {    
+    const startTotalService = performance.now();
+    
+    const startFindUser = performance.now();
     const user = await userRepository.findById(userId);
+    const endFindUser = performance.now();
+    console.log(`[Timer] [Service] DB User verify lookup took: ${(endFindUser - startFindUser).toFixed(2)}ms`);
 
     if (!user) {
       throw new NotFoundError("Người dùng không tồn tại");
     }
 
     try {
+      const startAISearch = performance.now();
       const result = await axios.post<SearchResponse>(`${env.AI_URL}/search/`, {
         image_base64: data.image_base64,
       });      
+      const endAISearch = performance.now();
+      console.log(`[Timer] [Service] AI Search API call took: ${(endAISearch - startAISearch).toFixed(2)}ms`);
 
       const searchData = result.data.data;
       
-
+      const startFindPostsByPerson = performance.now();
       const postData = await postRepository.findByPersonIds(
         searchData.map(([id, _score]) => id),
       );
+      const endFindPostsByPerson = performance.now();
+      console.log(`[Timer] [Service] DB find posts by Person IDs took: ${(endFindPostsByPerson - startFindPostsByPerson).toFixed(2)}ms`);
 
       const personPostMap = new Map(
         postData.map((post) => [post.personId, post]),
@@ -85,6 +96,7 @@ class PostService {
       } else if (listPendingPersonIds.length > 0) {
         createPostData.status = PostStatus.PENDING;
       } else {
+        const startAIEmbedding = performance.now();
         const createdPerson: any = await axios.post(`${env.AI_URL}/embedding/`, {
           name: data.name,
           age: data.age,
@@ -92,17 +104,23 @@ class PostService {
           date_of_birth: data.date_of_birth,
           image_base64: data.image_base64,
         });
+        const endAIEmbedding = performance.now();
+        console.log(`[Timer] [Service] AI Embedding API call took: ${(endAIEmbedding - startAIEmbedding).toFixed(2)}ms`);
+
         createPostData.personId = createdPerson.data.id;
         createPostData.status = PostStatus.CONFIRMED;
       }
 
       let createdPost;
       try {
+        const startDBCreatePost = performance.now();
         createdPost = await postRepository.create({
           ...createPostData,
           pendingPersonIds: listPendingPersonIds,
           authorId: userId,
         });
+        const endDBCreatePost = performance.now();
+        console.log(`[Timer] [Service] DB Create Post took: ${(endDBCreatePost - startDBCreatePost).toFixed(2)}ms`);
       } catch (err) {
         console.error("Lỗi khi tạo post:", err);
         throw err;
@@ -126,7 +144,11 @@ class PostService {
           };
         })
         .filter((item) => item !== null);
-      return mapPostToResponse({ ...createdPost, similarPersons });
+      
+      const response = mapPostToResponse({ ...createdPost, similarPersons });
+      const endTotalService = performance.now();
+      console.log(`[Timer] [Service] Total postService.createPost took: ${(endTotalService - startTotalService).toFixed(2)}ms`);
+      return response;
     } catch (error: any) {
       if (error.response) {
         const status = error.response.status;
@@ -238,7 +260,17 @@ class PostService {
       throw new ForbiddenError("Bạn không có quyền xóa bài đăng này");
     }
 
+    const personId = existingPost.personId;
+
     await postRepository.delete(postId);
+
+    if (personId) {
+      try {
+        await axios.delete(`${env.AI_URL}/embedding/${personId}`);
+      } catch (error: any) {
+        console.error(`Lỗi khi xóa vector/person ${personId} tại AI Service:`, error.message);
+      }
+    }
   };
 
   confirmPost = async (
@@ -268,7 +300,7 @@ class PostService {
         }
         try {
           const response = await axios.get(post.image_url, { responseType: 'arraybuffer' });
-          image_base64 = Buffer.from(response.data, 'binary').toString('base64');
+          image_base64 = Buffer.from(response.data as any, 'binary').toString('base64');
         } catch (error) {
           console.error("Lỗi khi tải ảnh từ URL:", error);
           throw new HttpException("Không thể tải ảnh của bài đăng để tạo định danh", 500);

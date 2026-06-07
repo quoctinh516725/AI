@@ -86,3 +86,35 @@ def update_person(db: Session, person_id, data):
     db.commit()
     db.refresh(person)
     return person
+
+# DELETE
+def delete_person(db: Session, person_id: str):
+    # Find mapping
+    mapping = db.query(IdMapping).filter(IdMapping.person_id == person_id).first()
+    if not mapping:
+        # Check if the person exists in the database anyway
+        person = db.query(Person).filter(Person.id == person_id).first()
+        if person:
+            db.delete(person)
+            db.commit()
+            return True
+        return False
+
+    faiss_id = mapping.faiss_id
+
+    # Delete from database
+    db.query(FaceRecord).filter(FaceRecord.person_id == person_id).delete()
+    db.query(IdMapping).filter(IdMapping.person_id == person_id).delete()
+    person = db.query(Person).filter(Person.id == person_id).first()
+    if person:
+        db.delete(person)
+    db.commit()
+
+    # Delete from FAISS
+    try:
+        faiss_manager = get_faiss_manager()
+        faiss_manager.remove_vector(faiss_id)
+    except Exception as e:
+        print(f"[Error] Failed to remove vector from FAISS: {str(e)}")
+
+    return True

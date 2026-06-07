@@ -20,3 +20,10 @@ def update_person(person_id: str, data: PersonUpdate, db: Session = Depends(get_
     if not person:
         raise HTTPException(status_code=404, detail="Hồ sơ không tồn tại!")
     return person
+
+@router.delete("/{person_id}")
+def delete_person(person_id: str, db: Session = Depends(get_db)):
+    success = embedding.delete_person(db, person_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Hồ sơ không tồn tại!")
+    return {"message": "Xóa hồ sơ và vector thành công!"}

@@ -35,6 +35,8 @@ class FaissManager:
         # Chuẩn bị query
         query = np.array(embedding, dtype="float32").reshape(1, -1)
 
+        print(f"\n[FAISS Log] -> Total vectors in FAISS index during search: {self.index.ntotal}\n")
+
         # FAISS search
         distances, ids = self.index.search(query, k)
 
@@ -58,3 +60,9 @@ class FaissManager:
                 person_id = faiss_person_id_map[faiss_id]
                 final_results.append((str(person_id), float(distance)))
         return final_results
+
+    def remove_vector(self, person_id):
+        ids = np.array([person_id], dtype="int64")
+        removed_count = self.index.remove_ids(ids)
+        self.save_index()
+        return removed_count
