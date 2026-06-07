@@ -17,15 +17,16 @@ class FaissManager:
             try:
                 self.index = faiss.read_index(self.index_path)
             except:
-                self.index = faiss.IndexIDMap(faiss.IndexFlatL2(self.dim))
+                self.index = faiss.IndexIDMap(faiss.IndexFlatIP(self.dim))
         else:
-            self.index = faiss.IndexIDMap(faiss.IndexFlatL2(self.dim))
+            self.index = faiss.IndexIDMap(faiss.IndexFlatIP(self.dim))
       
     def save_index(self):           
         faiss.write_index(self.index, self.index_path)
 
     def add_vector(self, embedding, person_id):
         vec = np.array(embedding, dtype="float32").reshape(1, -1)
+        faiss.normalize_L2(vec)
 
         ids = np.array([person_id], dtype="int64")
         self.index.add_with_ids(vec, ids)
@@ -34,6 +35,7 @@ class FaissManager:
     def search_vector(self, embedding, db, k=5):
         # Chuẩn bị query
         query = np.array(embedding, dtype="float32").reshape(1, -1)
+        faiss.normalize_L2(query)
 
         print(f"\n[FAISS Log] -> Total vectors in FAISS index during search: {self.index.ntotal}\n")
 

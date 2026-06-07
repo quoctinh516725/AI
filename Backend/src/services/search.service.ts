@@ -23,10 +23,9 @@ class SearchService {
 
       const searchData = result.data.data;
       
-      // Filter out scores >= 0.8
-      const filteredSearchData = searchData.filter(([_id, score]) => score < 1);
+      // Filter out scores < 0.50 (completely different people)
       
-      const personIds = filteredSearchData.map(([id]) => id);
+      const personIds = searchData.map(([id]) => id);
 
       if (personIds.length === 0) {
         const endTotalService = performance.now();
@@ -56,7 +55,7 @@ class SearchService {
 
       // Map the results and include the score
       const startMapping = performance.now();
-      const searchResults = filteredSearchData
+      const searchResults = searchData
         .flatMap(([id, score]) => {
           const personPosts = personPostMap.get(id);
           if (!personPosts) return null;

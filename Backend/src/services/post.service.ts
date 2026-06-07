@@ -64,10 +64,10 @@ class PostService {
       
       if (searchData.length > 0) {
         for (const [id, score] of searchData) {          
-          if (score < 0.6) {
+          if (score >= 0.70) {
             personId = id;
             break;
-          } else if (score < 0.8) {
+          } else if (score >= 0.60) {
             listPendingPersonIds.push(id);
           } else {
             break;
